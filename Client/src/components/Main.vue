@@ -8,10 +8,21 @@
     <div class="files">
         <input type="file" ref="fileInput" accept=".xlsx, .xls, .csv" />
         <div class="buttons">
-            <button @click="uploadFile">Update</button>
-            <button @click="clearFiles">Clear</button>
+            <button :disabled="!fileInput" @click="uploadFile">Generate</button>
+            <button :disabled="!fileDownload" @click="clearFiles">Clear</button>
         </div>
-        <p>{{ GPTresponse }}</p>
+        <div class="results" v-if="Object.keys(GPTresponse).length > 0">
+            <div class="software">
+                <h2>Software Requirement with Summary</h2>
+                <p>{{ GPTresponse.software }}</p>
+                <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
+            </div>
+            <div class="hardware">
+                <h2>Hardware Requirement with summary</h2>
+                <p>{{ GPTresponse.hardware }}</p>
+                <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -19,7 +30,8 @@
 import { ref } from 'vue';
 
 const fileInput = ref(null);
-const GPTresponse = ref('');
+const GPTresponse = ref({});
+const fileDownload = ref(null);
 
 const uploadFile = async () => {
     const file = fileInput.value.files[0];
@@ -34,9 +46,10 @@ const uploadFile = async () => {
             });
 
             console.log('Server response:', response.status, response.statusText);
+            fileDownload.value = await response.blob();
             getGPT();
 
-            if(response.ok){
+            /*if(response.ok){
                 const blob = await response.blob();
 
                 const url = window.URL.createObjectURL(blob);
@@ -49,7 +62,7 @@ const uploadFile = async () => {
 
                 document.body.removeChild(link);
                 console.log('File downloaded');
-            }
+            }*/
 
         } catch (error) {
             console.error('Error uploading file:', error);
@@ -61,7 +74,22 @@ const uploadFile = async () => {
 
 const clearFiles = () => {
     fileInput.value.value = '';
+    fileDownload.value = null;
+    GPTresponse.value = {};
 };
+
+const downloadFile = () => {
+    const url = window.URL.createObjectURL(fileDownload.value);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute('download', 'downloaded_file.xlsx');
+
+    document.body.appendChild(link);
+    link.click();
+
+    document.body.removeChild(link);
+    console.log('File downloaded');
+}
 
 const getGPT = async () => {
     try {
@@ -72,7 +100,8 @@ const getGPT = async () => {
         console.log('Server response:', response.status, response.statusText);
 
         if(response.ok){
-            GPTresponse.value = await response.text();
+            GPTresponse.value = await response.json();
+            console.log(GPTresponse.value);
         }
 
     } catch (error) {
@@ -107,6 +136,13 @@ const getGPT = async () => {
         padding: 5px;
         display:flex;
         justify-content:space-between;
+        align-items:center;
+    }
+
+    .results{
+        width:100vw;
+        display:flex;
+        justify-content:space-around;
         align-items:center;
     }
     
