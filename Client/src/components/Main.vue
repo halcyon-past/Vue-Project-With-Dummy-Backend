@@ -11,6 +11,7 @@
             <button :disabled="!fileInput" @click="uploadFile">Generate</button>
             <button :disabled="!fileDownload" @click="clearFiles">Clear</button>
         </div>
+        <!--
         <div class="results" v-if="Object.keys(GPTresponse).length > 0">
             <div class="software">
                 <h2>Software Requirement with Summary</h2>
@@ -20,6 +21,14 @@
             <div class="hardware">
                 <h2>Hardware Requirement with summary</h2>
                 <p>{{ GPTresponse.hardware }}</p>
+                <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
+            </div>
+        </div>
+        -->
+        <div class="results" v-if="Object.keys(GPTresponse).length > 0">
+            <div class="cards" v-for="(value, key) in GPTresponse" :key="key">
+                <h2>{{ key }} Requirement with Summary</h2>
+                <p>{{ value }}</p>
                 <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
             </div>
         </div>
@@ -144,6 +153,17 @@ const getGPT = async () => {
         display:flex;
         justify-content:space-around;
         align-items:center;
+        flex-wrap: wrap;
+    }
+
+    .cards{
+        max-width: 40%;
+        max-height: 600px;
+        overflow-y: scroll;
+    }
+
+    .cards::-webkit-scrollbar{
+        display: none;
     }
     
 
