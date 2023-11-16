@@ -1,18 +1,22 @@
 <template>
-    <div class="logo">
-        <img src="../assets/logo.png" alt="Wipro logo" />
+  <div class="logo">
+    <img src="../assets/logo.png" alt="Wipro logo" />
+  </div>
+  <div class="details">
+    <h2>RFQ Splitter</h2>
+  </div>
+  <div class="files">
+    <input type="file" ref="fileInput" />
+    <div class="buttons">
+      <button :disabled="!fileInput" @click="uploadFile">Upload</button>
+      <button :disabled="!fileUploaded" @click="getGPT">Generate</button>
+      <button
+        :disabled="Object.keys(GPTresponse).length <= 0"
+        @click="clearFiles">
+        Clear
+      </button>
     </div>
-    <div class="details">
-        <h2>RFQ Splitter</h2>
-    </div>
-    <div class="files">
-        <input type="file" ref="fileInput" accept=".xlsx, .xls, .csv" />
-        <div class="buttons">
-            <button :disabled="!fileInput" @click="uploadFile">Upload</button>
-            <button :disabled="!fileUploaded" @click="getGPT">Generate</button>
-            <button :disabled="Object.keys(GPTresponse).length <= 0" @click="clearFiles">Clear</button>
-        </div>
-        <!--
+    <!--
         <div class="results" v-if="Object.keys(GPTresponse).length > 0">
             <div class="software">
                 <h2>Software Requirement with Summary</h2>
@@ -26,18 +30,22 @@
             </div>
         </div>
         -->
-        <div class="results" v-if="Object.keys(GPTresponse).length > 0">
-            <div class="cards" v-for="(value, key) in GPTresponse" :key="key">
-                <h2>{{ key }} Requirement with Summary</h2>
-                <p style="white-space: pre-wrap;text-align: left;">{{ value }}</p>
-                <button :disabled="Object.keys(GPTresponse).length <= 0" @click="downloadFile" >Download</button>
-            </div>
-        </div>
+    <div class="results" v-if="Object.keys(GPTresponse).length > 0">
+      <div class="cards" v-for="(value, key) in GPTresponse" :key="key">
+        <h2>{{ key }} Requirement with Summary</h2>
+        <p style="white-space: pre-wrap; text-align: left">{{ value }}</p>
+        <button
+          :disabled="Object.keys(GPTresponse).length <= 0"
+          @click="downloadFile">
+          Download
+        </button>
+      </div>
     </div>
+  </div>
 </template>
 
 <script setup>
-import { ref } from 'vue';
+import { ref } from "vue";
 
 const fileInput = ref(null);
 const GPTresponse = ref({});
@@ -45,21 +53,21 @@ const fileDownload = ref(null);
 const fileUploaded = ref(false);
 
 const uploadFile = async () => {
-    const file = fileInput.value.files[0];
-    if (file) {
-        const formData = new FormData();
-        formData.append('file', file);
+  const file = fileInput.value.files[0];
+  if (file) {
+    const formData = new FormData();
+    formData.append("file", file);
 
-        try {
-            const response = await fetch('http://localhost:5000/upload', {
-                method: 'POST',
-                body: formData,
-            });
+    try {
+      const response = await fetch("http://localhost:5000/upload", {
+        method: "POST",
+        body: formData,
+      });
 
-            console.log('Server response:', response.status, response.statusText);
-            fileUploaded.value = true;
+      console.log("Server response:", response.status, response.statusText);
+      fileUploaded.value = true;
 
-            /*if(response.ok){
+      /*if(response.ok){
                 const blob = await response.blob();
 
                 const url = window.URL.createObjectURL(blob);
@@ -73,114 +81,111 @@ const uploadFile = async () => {
                 document.body.removeChild(link);
                 console.log('File downloaded');
             }*/
-
-        } catch (error) {
-            console.error('Error uploading file:', error);
-        }
-    } else {
-        console.warn('No file selected');
+    } catch (error) {
+      console.error("Error uploading file:", error);
     }
+  } else {
+    console.warn("No file selected");
+  }
 };
 
 const clearFiles = () => {
-    fileInput.value.value = '';
-    fileDownload.value = null;
-    GPTresponse.value = {};
-    fileUploaded.value = false;
+  fileInput.value.value = "";
+  fileDownload.value = null;
+  GPTresponse.value = {};
+  fileUploaded.value = false;
 };
 
 const downloadFile = async () => {
-    try {
-        const response = await fetch('http://localhost:5000/download', {
-            method: 'GET',
-        });
+  const selectedValue = Object.keys(GPTresponse.value)[0]; // Get the selected value from GPTresponse
+  const downloadURL = `http://localhost:5000/download/${selectedValue}`;
+  const fileDownloadName = Object.keys(GPTresponse.value)[0]+"_results.txt" // Construct the API URL dynamically
 
-        console.log('Server response:', response.status, response.statusText);
+  try {
+    const response = await fetch(downloadURL, {
+      method: "GET",
+    });
 
-        if(response.ok){
-            fileDownload.value = await response.blob();
-            const url = window.URL.createObjectURL(fileDownload.value);
-            const link = document.createElement('a');
-            link.href = url;
-            link.setAttribute('download', 'downloaded_file.xlsx');
+    console.log("Server response:", response.status, response.statusText);
 
-            document.body.appendChild(link);
-            link.click();
+    if (response.ok) {
+      fileDownload.value = await response.blob();
+      const url = window.URL.createObjectURL(fileDownload.value);
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", fileDownloadName);
 
-            document.body.removeChild(link);
-            console.log('File downloaded');
-        }
+      document.body.appendChild(link);
+      link.click();
 
-    } catch (error) {
-        console.error('Error uploading file:', error);
+      document.body.removeChild(link);
+      console.log("File downloaded");
     }
-}
-
-const getGPT = async () => {
-    try {
-        const response = await fetch('http://localhost:5000/response', {
-            method: 'GET',
-        });
-
-        console.log('Server response:', response.status, response.statusText);
-
-        if(response.ok){
-            GPTresponse.value = await response.json();
-            console.log(GPTresponse.value);
-        }
-
-    } catch (error) {
-        console.error('Error uploading file:', error);
-    }
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
 };
 
+const getGPT = async () => {
+  try {
+    const response = await fetch("http://localhost:5000/response", {
+      method: "GET",
+    });
+
+    console.log("Server response:", response.status, response.statusText);
+
+    if (response.ok) {
+      GPTresponse.value = await response.json();
+      console.log(GPTresponse.value);
+    }
+  } catch (error) {
+    console.error("Error uploading file:", error);
+  }
+};
 </script>
 
 <style scoped>
+img {
+  height: 150px;
+  width: 240px;
+}
 
-    img{
-        height:150px;
-        width:240px;
-    }
+.files {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
 
-    .files{
-        display:flex;
-        flex-direction:column;
-        justify-content:center;
-        align-items:center;
-    }
+.files input {
+  width: 200px;
+  outline: 2px solid rgb(138, 138, 174);
+  margin: 5px;
+}
 
-    .files input{
-        width: 200px;
-        outline: 2px solid rgb(138, 138, 174);
-        margin: 5px;
-    }
+.buttons {
+  width: 300px;
+  padding: 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
 
-    .buttons{
-        width: 300px;
-        padding: 5px;
-        display:flex;
-        justify-content:space-between;
-        align-items:center;
-    }
+.results {
+  width: 100vw;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  flex-wrap: wrap;
+}
 
-    .results{
-        width:100vw;
-        display:flex;
-        justify-content:space-around;
-        align-items:center;
-        flex-wrap: wrap;
-    }
+.cards {
+  max-width: 40%;
+  max-height: 600px;
+  overflow-y: scroll;
+}
 
-    .cards{
-        max-width: 40%;
-        max-height: 600px;
-        overflow-y: scroll;
-    }
-
-    .cards::-webkit-scrollbar{
-        display: none;
-    }
-    
-
+.cards::-webkit-scrollbar {
+  display: none;
+}
 </style>

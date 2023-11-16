@@ -26,12 +26,12 @@ def upload_file():
         else:
             return 'No file uploaded'
         
-@app.route("/download", methods=['GET'])
-def download_file():
-    if len(path[0])>0:
-        return send_file(path[0], mimetype='*/*', as_attachment=True)
+@app.route("/download/<filetype>", methods=['GET'])
+def download_file(filetype):
+    if os.path.exists("path\\"+filetype+"_results.txt"):
+        return send_file("path\\"+filetype+"_results.txt", mimetype='*/*', as_attachment=True)
     else:
-        return 'No file uploaded yet'
+        return 'No Such File Exists'
         
 @app.route("/response", methods=['GET'])
 def get_response():
