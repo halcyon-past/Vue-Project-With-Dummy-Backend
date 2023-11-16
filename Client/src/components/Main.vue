@@ -31,12 +31,12 @@
         </div>
         -->
     <div class="results" v-if="Object.keys(GPTresponse).length > 0">
-      <div class="cards" v-for="(value, key) in GPTresponse" :key="key">
+      <div class="cards" v-for="(value, key,index) in GPTresponse" :key="key">
         <h2>{{ key }} Requirement with Summary</h2>
         <p style="white-space: pre-wrap; text-align: left">{{ value }}</p>
         <button
           :disabled="Object.keys(GPTresponse).length <= 0"
-          @click="downloadFile">
+          @click="downloadFile(index)">
           Download
         </button>
       </div>
@@ -96,10 +96,10 @@ const clearFiles = () => {
   fileUploaded.value = false;
 };
 
-const downloadFile = async () => {
-  const selectedValue = Object.keys(GPTresponse.value)[0]; // Get the selected value from GPTresponse
+const downloadFile = async (index) => {
+  const selectedValue = Object.keys(GPTresponse.value)[index]; // Get the selected value from GPTresponse
   const downloadURL = `http://localhost:5000/download/${selectedValue}`;
-  const fileDownloadName = Object.keys(GPTresponse.value)[0]+"_results.txt" // Construct the API URL dynamically
+  const fileDownloadName = selectedValue+"_results.txt" // Construct the API URL dynamically
 
   try {
     const response = await fetch(downloadURL, {
