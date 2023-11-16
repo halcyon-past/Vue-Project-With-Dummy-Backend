@@ -8,8 +8,9 @@
     <div class="files">
         <input type="file" ref="fileInput" accept=".xlsx, .xls, .csv" />
         <div class="buttons">
-            <button :disabled="!fileInput" @click="uploadFile">Generate</button>
-            <button :disabled="!fileDownload" @click="clearFiles">Clear</button>
+            <button :disabled="!fileInput" @click="uploadFile">Upload</button>
+            <button :disabled="!fileUploaded" @click="getGPT">Generate</button>
+            <button :disabled="Object.keys(GPTresponse).length <= 0" @click="clearFiles">Clear</button>
         </div>
         <!--
         <div class="results" v-if="Object.keys(GPTresponse).length > 0">
@@ -29,7 +30,7 @@
             <div class="cards" v-for="(value, key) in GPTresponse" :key="key">
                 <h2>{{ key }} Requirement with Summary</h2>
                 <p style="white-space: pre-wrap;text-align: left;">{{ value }}</p>
-                <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
+                <button :disabled="Object.keys(GPTresponse).length <= 0" @click="downloadFile" >Download</button>
             </div>
         </div>
     </div>
@@ -41,6 +42,7 @@ import { ref } from 'vue';
 const fileInput = ref(null);
 const GPTresponse = ref({});
 const fileDownload = ref(null);
+const fileUploaded = ref(false);
 
 const uploadFile = async () => {
     const file = fileInput.value.files[0];
@@ -55,8 +57,7 @@ const uploadFile = async () => {
             });
 
             console.log('Server response:', response.status, response.statusText);
-            fileDownload.value = await response.blob();
-            getGPT();
+            fileUploaded.value = true;
 
             /*if(response.ok){
                 const blob = await response.blob();
@@ -85,19 +86,34 @@ const clearFiles = () => {
     fileInput.value.value = '';
     fileDownload.value = null;
     GPTresponse.value = {};
+    fileUploaded.value = false;
 };
 
-const downloadFile = () => {
-    const url = window.URL.createObjectURL(fileDownload.value);
-    const link = document.createElement('a');
-    link.href = url;
-    link.setAttribute('download', 'downloaded_file.xlsx');
+const downloadFile = async () => {
+    try {
+        const response = await fetch('http://localhost:5000/download', {
+            method: 'GET',
+        });
 
-    document.body.appendChild(link);
-    link.click();
+        console.log('Server response:', response.status, response.statusText);
 
-    document.body.removeChild(link);
-    console.log('File downloaded');
+        if(response.ok){
+            fileDownload.value = await response.blob();
+            const url = window.URL.createObjectURL(fileDownload.value);
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', 'downloaded_file.xlsx');
+
+            document.body.appendChild(link);
+            link.click();
+
+            document.body.removeChild(link);
+            console.log('File downloaded');
+        }
+
+    } catch (error) {
+        console.error('Error uploading file:', error);
+    }
 }
 
 const getGPT = async () => {
@@ -141,7 +157,7 @@ const getGPT = async () => {
     }
 
     .buttons{
-        width: 200px;
+        width: 300px;
         padding: 5px;
         display:flex;
         justify-content:space-between;
