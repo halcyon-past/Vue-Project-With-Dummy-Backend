@@ -7,6 +7,7 @@
   </div>
   <div class="files">
     <input type="file" ref="fileInput" />
+    <Spinner v-if="loading" />
     <div class="buttons">
       <button :disabled="!fileInput" @click="uploadFile">Upload</button>
       <button :disabled="!fileUploaded" @click="getGPT">Generate</button>
@@ -31,7 +32,7 @@
         </div>
         -->
     <div class="results" v-if="Object.keys(GPTresponse).length > 0">
-      <div class="cards" v-for="(value, key,index) in GPTresponse" :key="key">
+      <div class="cards" v-for="(value, key, index) in GPTresponse" :key="key">
         <h2>{{ key }} Requirement with Summary</h2>
         <p style="white-space: pre-wrap; text-align: left">{{ value }}</p>
         <button
@@ -45,12 +46,14 @@
 </template>
 
 <script setup>
+import Spinner from "./Spinner.vue";
 import { ref } from "vue";
 
 const fileInput = ref(null);
 const GPTresponse = ref({});
 const fileDownload = ref(null);
 const fileUploaded = ref(false);
+const loading = ref(false);
 
 const uploadFile = async () => {
   const file = fileInput.value.files[0];
@@ -59,6 +62,7 @@ const uploadFile = async () => {
     formData.append("file", file);
 
     try {
+      loading.value = true;
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
@@ -81,6 +85,7 @@ const uploadFile = async () => {
                 document.body.removeChild(link);
                 console.log('File downloaded');
             }*/
+      loading.value = false;
     } catch (error) {
       console.error("Error uploading file:", error);
     }
@@ -99,7 +104,7 @@ const clearFiles = () => {
 const downloadFile = async (index) => {
   const selectedValue = Object.keys(GPTresponse.value)[index]; // Get the selected value from GPTresponse
   const downloadURL = `http://localhost:5000/download/${selectedValue}`;
-  const fileDownloadName = selectedValue+"_results.txt" // Construct the API URL dynamically
+  const fileDownloadName = selectedValue + "_results.txt"; // Construct the API URL dynamically
 
   try {
     const response = await fetch(downloadURL, {
@@ -147,7 +152,7 @@ const getGPT = async () => {
 <style scoped>
 img {
   height: 150px;
-  width: 240px;
+  width: 280px;
 }
 
 .files {

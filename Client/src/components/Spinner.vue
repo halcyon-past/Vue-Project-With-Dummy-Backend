@@ -35,7 +35,7 @@
 
 <style scoped>
 
-:root {
+:root{
 	--hue: 223;
 	--bg: hsl(var(--hue),90%,95%);
 	--fg: hsl(var(--hue),90%,5%);
@@ -43,11 +43,11 @@
 	font-size: calc(16px + (24 - 16) * (100vw - 320px) / (1280 - 320));
 }
 .ip {
-	width: 2em;
-	height: 1em;
+	width: 4em;
+	height: 2em;
 }
 .ip__track {
-	stroke: hsl(var(--hue),90%,90%);
+	stroke: hsl(223, 74%, 39%);
 	transition: stroke var(--trans-dur);
 }
 .ip__worm1,
