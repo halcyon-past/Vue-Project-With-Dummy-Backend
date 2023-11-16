@@ -6,6 +6,7 @@ import os
 
 app = Flask(__name__)
 CORS(app, methods=['GET', 'POST'])
+app.config['JSON_SORT_KEYS'] = False
 
 @app.route("/upload", methods=['POST'])
 def upload_file():
@@ -28,4 +29,4 @@ def get_response():
     return giveResults()
 
 if __name__ == "__main__":
-    app.run()
+    app.run(debug=True)

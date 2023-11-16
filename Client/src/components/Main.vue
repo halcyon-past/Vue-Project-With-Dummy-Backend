@@ -28,7 +28,7 @@
         <div class="results" v-if="Object.keys(GPTresponse).length > 0">
             <div class="cards" v-for="(value, key) in GPTresponse" :key="key">
                 <h2>{{ key }} Requirement with Summary</h2>
-                <p>{{ value }}</p>
+                <p style="white-space: pre-wrap;text-align: left;">{{ value }}</p>
                 <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
             </div>
         </div>
