@@ -2,6 +2,7 @@ from flask import Flask, request, send_file
 from GPTmodel import giveResults, initialize
 from flask_cors import CORS
 import pandas as pd
+import shutil
 import os
 
 app = Flask(__name__)
@@ -36,6 +37,11 @@ def download_file(filetype):
 @app.route("/response", methods=['GET'])
 def get_response():
     return giveResults(path[0])
+
+@app.route("/cleardata", methods=['GET'])
+def clear_data():
+    shutil.rmtree('path')
+    return "Data Cleared"
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -99,6 +99,7 @@ const clearFiles = () => {
   fileDownload.value = null;
   GPTresponse.value = {};
   fileUploaded.value = false;
+  removeDirectory();
 };
 
 const downloadFile = async (index) => {
@@ -128,6 +129,22 @@ const downloadFile = async (index) => {
     }
   } catch (error) {
     console.error("Error uploading file:", error);
+  }
+};
+
+const removeDirectory = async () => {
+  try {
+    const response = await fetch("http://localhost:5000/cleardata", {
+      method: "GET",
+    });
+
+    console.log("Server response:", response.status, response.statusText);
+
+    if (response.ok) {
+      console.log("Directory removed");
+    }
+  } catch (error) {
+    console.error("Error removing files:", error);
   }
 };
 
