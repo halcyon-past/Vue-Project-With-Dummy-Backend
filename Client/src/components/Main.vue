@@ -17,20 +17,6 @@
         Clear
       </button>
     </div>
-    <!--
-        <div class="results" v-if="Object.keys(GPTresponse).length > 0">
-            <div class="software">
-                <h2>Software Requirement with Summary</h2>
-                <p>{{ GPTresponse.software }}</p>
-                <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
-            </div>
-            <div class="hardware">
-                <h2>Hardware Requirement with summary</h2>
-                <p>{{ GPTresponse.hardware }}</p>
-                <button :disabled="!fileDownload" @click="downloadFile" >Download</button>
-            </div>
-        </div>
-        -->
     <div class="results" v-if="Object.keys(GPTresponse).length > 0">
       <div class="cards" v-for="(value, key, index) in GPTresponse" :key="key">
         <h2>{{ key }} Requirement with Summary</h2>
@@ -63,6 +49,7 @@ const uploadFile = async () => {
 
     try {
       loading.value = true;
+
       const response = await fetch("http://localhost:5000/upload", {
         method: "POST",
         body: formData,
@@ -71,20 +58,6 @@ const uploadFile = async () => {
       console.log("Server response:", response.status, response.statusText);
       fileUploaded.value = true;
 
-      /*if(response.ok){
-                const blob = await response.blob();
-
-                const url = window.URL.createObjectURL(blob);
-                const link = document.createElement('a');
-                link.href = url;
-                link.setAttribute('download', 'downloaded_file.xlsx');
-
-                document.body.appendChild(link);
-                link.click();
-
-                document.body.removeChild(link);
-                console.log('File downloaded');
-            }*/
       loading.value = false;
     } catch (error) {
       console.error("Error uploading file:", error);
@@ -103,9 +76,9 @@ const clearFiles = () => {
 };
 
 const downloadFile = async (index) => {
-  const selectedValue = Object.keys(GPTresponse.value)[index]; // Get the selected value from GPTresponse
+  const selectedValue = Object.keys(GPTresponse.value)[index]; 
   const downloadURL = `http://localhost:5000/download/${selectedValue}`;
-  const fileDownloadName = selectedValue + "_results.txt"; // Construct the API URL dynamically
+  const fileDownloadName = selectedValue + "_results.txt"; 
 
   try {
     const response = await fetch(downloadURL, {

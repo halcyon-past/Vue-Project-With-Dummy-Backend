@@ -11,6 +11,10 @@ app.config['JSON_SORT_KEYS'] = False
 
 path=['',]
 
+@app.route("/", methods=['GET'])
+def home():
+    return "The Server is running"
+
 @app.route("/upload", methods=['POST'])
 def upload_file():
     if request.method == 'POST':
@@ -40,8 +44,11 @@ def get_response():
 
 @app.route("/cleardata", methods=['GET'])
 def clear_data():
-    shutil.rmtree('path')
-    return "Data Cleared"
+    if os.path.exists('path'):
+        shutil.rmtree('path')
+        return "Data Cleared"
+    else:
+        return "No Data to Clear"
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True,host="0.0.0.0", port=3000)
